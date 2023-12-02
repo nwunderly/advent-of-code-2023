@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"strconv"
@@ -16,13 +15,15 @@ func isdigit(str string) bool {
 	return true
 }
 
-func part1(line string) int {
-	var buffer bytes.Buffer
+// original solution to part 1
+func part1Original(line string) int {
+	var str, digit1, digit2 string
 
 	// first digit
 	for _, char := range line {
-		if isdigit(string(char)) {
-			buffer.WriteRune(char)
+		str = string(char)
+		if isdigit(str) {
+			digit1 = str
 			break
 		}
 	}
@@ -32,14 +33,38 @@ func part1(line string) int {
 	runes := []rune(line)
 	for i := len(runes) - 1; i >= 0; i-- {
 		char = runes[i]
-		if isdigit(string(char)) {
-			buffer.WriteRune(char)
+		str = string(char)
+		if isdigit(str) {
+			digit2 = str
 			break
 		}
 	}
 
 	// convert to int
-	number, err := strconv.Atoi(buffer.String())
+	number, err := strconv.Atoi(digit1 + digit2)
+	if err != nil {
+		panic(err)
+	}
+
+	return number
+}
+
+// optimized solution to part 1
+func part1(line string) int {
+	var str, digit1, digit2 string
+
+	for _, char := range line {
+		str = string(char)
+		if isdigit(str) {
+			if digit1 == "" {
+				digit1 = str
+			}
+			digit2 = str
+		}
+	}
+
+	// convert to int
+	number, err := strconv.Atoi(digit1 + digit2)
 	if err != nil {
 		panic(err)
 	}
@@ -60,7 +85,7 @@ var digits = []string{
 	"9", "nine",
 }
 
-var digits_map = map[string]string{
+var digitsMap = map[string]string{
 	"zero":  "0",
 	"one":   "1",
 	"two":   "2",
@@ -77,36 +102,36 @@ func part2(line string) int {
 	digit1 := ""
 	digit2 := ""
 
-	index_digit1 := len(line)
-	index_digit2 := -1
+	indexDigit1 := len(line)
+	indexDigit2 := -1
 
-	index_left := 0
-	index_right := 0
+	indexLeft := 0
+	indexRight := 0
 
 	for _, digit := range digits {
 		// find leftmost and rightmost occurrence of digit in string
-		index_left = strings.Index(line, digit)
-		index_right = strings.LastIndex(line, digit)
+		indexLeft = strings.Index(line, digit)
+		indexRight = strings.LastIndex(line, digit)
 
 		// current digit found further left than current cache
-		if index_left != -1 && index_left < index_digit1 {
-			index_digit1 = index_left
+		if indexLeft != -1 && indexLeft < indexDigit1 {
+			indexDigit1 = indexLeft
 			digit1 = digit
 		}
 
 		// current digit found further right than current cache
-		if index_right != -1 && index_right > index_digit2 {
-			index_digit2 = index_right
+		if indexRight != -1 && indexRight > indexDigit2 {
+			indexDigit2 = indexRight
 			digit2 = digit
 		}
 	}
 
 	// "one" -> "1"
 	if !isdigit(digit1) {
-		digit1 = digits_map[digit1]
+		digit1 = digitsMap[digit1]
 	}
 	if !isdigit(digit2) {
-		digit2 = digits_map[digit2]
+		digit2 = digitsMap[digit2]
 	}
 
 	// make final number

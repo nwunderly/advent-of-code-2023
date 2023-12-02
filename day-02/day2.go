@@ -7,73 +7,75 @@ import (
 	"strings"
 )
 
-var all_game_data = [][]map[string]int{}
+// parsed data from input file
+var allGameData = [][]map[string]int{}
 
-var (
-	red_cubes   = 12
-	green_cubes = 13
-	blue_cubes  = 14
-)
+func parseLine(line string) {
+	splitColon := strings.Split(line, ": ")
+	// title := splitColon[0]
+	gameInfo := splitColon[1]
 
-func parse_line(line string) {
-	split_colon := strings.Split(line, ": ")
-	// title := split_colon[0]
-	game_info := split_colon[1]
-
-	// game_id, err := strconv.Atoi(strings.Split(title, " ")[1])
+	// gameId, err := strconv.Atoi(strings.Split(title, " ")[1])
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	split_semicolon := strings.Split(game_info, "; ")
+	splitSemicolon := strings.Split(gameInfo, "; ")
 
 	// list of handfuls of cubes for one game
-	game_data := []map[string]int{}
+	gameData := []map[string]int{}
 
 	// one handful of cubes
-	for _, cube_handful := range split_semicolon {
-		split_comma := strings.Split(cube_handful, ", ")
+	for _, handfulText := range splitSemicolon {
+		splitComma := strings.Split(handfulText, ", ")
 
-		handful_data := map[string]int{}
+		handfulData := map[string]int{}
 
 		// one color
-		for _, color_and_number := range split_comma {
-			split_space := strings.Split(color_and_number, " ")
-			number, err := strconv.Atoi(split_space[0])
+		for _, colorAndNumber := range splitComma {
+			splitSpace := strings.Split(colorAndNumber, " ")
+			number, err := strconv.Atoi(splitSpace[0])
 			if err != nil {
 				panic(err)
 			}
-			color := split_space[1]
+			color := splitSpace[1]
 
-			handful_data[color] = number
+			handfulData[color] = number
 		}
 
-		game_data = append(game_data, handful_data)
+		gameData = append(gameData, handfulData)
 	}
 
-	all_game_data = append(all_game_data, game_data)
+	allGameData = append(allGameData, gameData)
 }
+
+// known info for part 1
+const (
+	maxRedCubes   = 12
+	maxGreenCubes = 13
+	maxBlueCubes  = 14
+)
 
 func part1() {
 	var sum = 0
-	var game_id = 0
-	var game_valid = true
+	var gameId = 0
+	var gameIsPossible = true
 
 	// loop all games
-	for i, game_data := range all_game_data {
-		game_id = i + 1
-		game_valid = true
+	for i, gameData := range allGameData {
+		gameId = i + 1
+		gameIsPossible = true
 
-		// if any handfuls in this game don't work, game is invalid
-		for _, handful := range game_data {
-			if handful["red"] > red_cubes || handful["green"] > green_cubes || handful["blue"] > blue_cubes {
-				game_valid = false
+		// if any handfuls in this game don't work, game is impossible
+		for _, handful := range gameData {
+			if handful["red"] > maxRedCubes || handful["green"] > maxGreenCubes || handful["blue"] > maxBlueCubes {
+				gameIsPossible = false
 			}
 		}
 
-		// if no handfuls trigger criteria, game is valid
-		if game_valid {
-			sum += game_id
+		// if no handfuls triggered the criteria, this game is possible
+		if gameIsPossible {
+			sum += gameId
 		}
 	}
 	fmt.Printf("Part 1: %d\n", sum)
@@ -81,36 +83,36 @@ func part1() {
 
 func part2() {
 	var sum = 0
-	// var game_id = 0
+	// var gameId = 0
 
 	var red, green, blue int
-	var min_red, min_green, min_blue int
+	var minRed, minGreen, minBlue int
 
 	// loop all games
-	for _, game_data := range all_game_data {
-		// game_id = i + 1
-		min_red = 0
-		min_green = 0
-		min_blue = 0
+	for _, gameData := range allGameData {
+		// gameId = i + 1
+		minRed = 0
+		minGreen = 0
+		minBlue = 0
 
 		// find min value of each color for this game
-		for _, handful := range game_data {
+		for _, handful := range gameData {
 			red = handful["red"]
-			if red > min_red {
-				min_red = red
+			if red > minRed {
+				minRed = red
 			}
 			green = handful["green"]
-			if green > min_green {
-				min_green = green
+			if green > minGreen {
+				minGreen = green
 			}
 			blue = handful["blue"]
-			if blue > min_blue {
-				min_blue = blue
+			if blue > minBlue {
+				minBlue = blue
 			}
 		}
 
 		// find power of set for game and add it to sum
-		sum += min_red * min_green * min_blue
+		sum += minRed * minGreen * minBlue
 	}
 
 	fmt.Printf("Part 2: %d\n", sum)
@@ -126,7 +128,7 @@ func main() {
 	lines := strings.Split(str, "\n")
 
 	for _, line := range lines {
-		parse_line(line)
+		parseLine(line)
 	}
 
 	part1()

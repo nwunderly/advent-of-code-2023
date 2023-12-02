@@ -1,3 +1,7 @@
+"""
+Python file used to originally solve Part 2.
+"""
+
 def part1_initial(line: str) -> int:
     for char in line:
         if char.isdigit():
