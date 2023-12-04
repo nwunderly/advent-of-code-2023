@@ -1,0 +1,27 @@
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"strings"
+
+	"github.com/nwunderly/advent-of-code-2023/aoc"
+)
+
+func main() {
+	buf, err := ioutil.ReadFile("input.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	str := string(buf)
+	lines := strings.Split(str, "\n")
+
+	for _, line := range lines {
+		parseLine(line)
+	}
+
+
+
+
+}
