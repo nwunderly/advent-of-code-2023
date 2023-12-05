@@ -17,3 +17,32 @@ func Int(str string) int {
 	}
 	return i
 }
+
+func Ints(text string) []int {
+	numbers := []int{}
+	currentNumber := ""
+	str := ""
+	number := 0
+
+	for _, char := range text {
+		str = string(char)
+		if IsDigit(str) {
+			currentNumber += str
+		} else {
+			if currentNumber != "" {
+				number = Int(currentNumber)
+				numbers = append(numbers, number)
+				currentNumber = ""
+			}
+		}
+	}
+
+	// if number at end of string
+	if currentNumber != "" {
+		number = Int(currentNumber)
+		numbers = append(numbers, number)
+		currentNumber = ""
+	}
+
+	return numbers
+}
