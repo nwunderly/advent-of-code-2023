@@ -40,22 +40,6 @@ func containsInt(array []int, n int) bool {
 	return false
 }
 
-// func cardPoints(card Card) int {
-// 	points := 0
-
-// 	for _, yourNumber := range card.yourNumbers {
-// 		if containsInt(card.winningNumbers, yourNumber) {
-// 			if points == 0 {
-// 				points = 1
-// 			} else {
-// 				points *= 2
-// 			}
-// 		}
-// 	}
-
-// 	return points
-// }
-
 func countMatches(card Card) int {
 	matches := 0
 
@@ -69,6 +53,7 @@ func countMatches(card Card) int {
 }
 
 func part1() {
+	defer aoc.Timer("Part 1")()
 	matches := 0
 	points := 0
 	sum := 0
@@ -102,7 +87,9 @@ func processCard(i int, card Card) int {
 	return sum
 }
 
-func part2() {
+// original implementation: recursion (see processCard)
+func part2Original() {
+	defer aoc.Timer("Part 2 (Original)")()
 	sum := 0
 
 	for i, card := range cards {
@@ -110,6 +97,34 @@ func part2() {
 	}
 
 	fmt.Printf("Part 2: %d\n", sum)
+}
+
+// optimized implementation: iterate backwards, cache "value" of each card
+func part2Optimized() {
+	defer aoc.Timer("Part 2 (Optimized)")()
+	sum := 0
+
+	matches := 0
+	value := 0
+
+	var card Card
+	var cardValues = map[int]int{}
+
+	for i := len(cards) - 1; i >= 0; i-- {
+		card = cards[i]
+		matches = countMatches(card)
+		value = 1
+
+		for j := i + 1; j < i+matches+1; j++ {
+			value += cardValues[j]
+		}
+
+		// fmt.Printf("card %d: matches=%d, value=%d\n", i+1, matches, value)
+		cardValues[i] = value
+		sum += value
+	}
+
+	fmt.Printf("Part 2 (again): %d\n", sum)
 }
 
 func main() {
@@ -133,6 +148,10 @@ func main() {
 		parseLine(i, line)
 	}
 
-	part1()
-	part2()
+	part1()          // <100us
+	part2Original()  // <1.5s
+	part2Optimized() // <200us
+
+	fmt.Println("")
+	aoc.TimerResults()
 }
