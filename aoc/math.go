@@ -20,3 +20,11 @@ func TimerResults() {
 		fmt.Print(msg)
 	}
 }
+
+func IntRange(start, end int) []int {
+	rng := make([]int, end-start)
+	for i := range rng {
+		rng[i] = start + i
+	}
+	return rng
+}
