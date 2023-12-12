@@ -105,54 +105,124 @@ func part1(seeds []int) {
 	fmt.Printf("Part 1: %d\n", lowestLocation)
 }
 
-func getRangesFromPairs(ranges []int) ([][]int, [][]int) {
+func getRangesFromPairs(ranges []int) [][]int {
 	var start, length int
-	// var rng []int
-	var startLength []int
+	var rng []int
 
 	rangesParsed := [][]int{}
-	startLengthParsed := [][]int{}
 
-	for i := 0; i < len(ranges)/2; i += 2 {
+	for i := 0; i < len(ranges); i += 2 {
 		start = ranges[i]
 		length = ranges[i+1]
 
-		startLength = []int{start, length}
-		// rng = aoc.IntRange(start, start+length)
+		// (start, end)
+		rng = []int{start, start + length}
 
-		startLengthParsed = append(startLengthParsed, startLength)
-		// rangesParsed = append(rangesParsed, rng)
+		rangesParsed = append(rangesParsed, rng)
 	}
 
-	return startLengthParsed, rangesParsed
+	// fmt.Println("getRangesFromPairs input =", ranges)
+	// fmt.Println("getRangesFromPairs output =", rangesParsed)
+	return rangesParsed
+}
+
+func intervalIntersection(mp []MapRow, sourceInterval [][]int) [][]int {
+	// note: cannot assume ranges are in numeric order
+	destInterval := [][]int{}
+
+	var sourceStart, sourceEnd int
+	var mapSourceStart, mapSourceEnd int
+
+	var leftStart, leftEnd int
+	var intersectionStart, intersectionEnd int
+	var rightStart, rightEnd int
+	var left, right []int
+
+	var mapDestStart int
+
+	var destStart, destEnd int
+
+	unmapped := [][]int{}
+
+	for _, row := range mp {
+		mapSourceStart = row.sourceStart
+		mapSourceEnd = row.sourceStart + row.rangeLength
+		mapDestStart = row.destStart
+
+		unmapped = [][]int{}
+
+		for _, sourceRange := range sourceInterval {
+			sourceStart = sourceRange[0]
+			sourceEnd = sourceRange[1]
+
+			// unmapped source items left of intersection
+			leftStart = sourceStart
+			leftEnd = aoc.MinInt(sourceEnd, mapSourceStart)
+			left = []int{leftStart, leftEnd}
+
+			// our intersection (stuff that's mapped)
+			intersectionStart = aoc.MaxInt(sourceStart, mapSourceStart)
+			intersectionEnd = aoc.MinInt(mapSourceEnd, sourceEnd)
+
+			// unmapped source items right of intersection
+			rightStart = aoc.MaxInt(mapSourceEnd, sourceStart)
+			rightEnd = sourceEnd
+			right = []int{rightStart, rightEnd}
+
+			// there's stuff to the left
+			if leftStart < leftEnd {
+				unmapped = append(unmapped, left)
+			}
+
+			// the intersection is valid
+			if intersectionStart < intersectionEnd {
+				destStart = mapDestStart + (intersectionStart - mapSourceStart)
+				destEnd = destStart + (intersectionEnd - intersectionStart)
+				destInterval = append(destInterval, []int{destStart, destEnd})
+			}
+
+			// there's stuff to the right
+			if rightStart < rightEnd {
+				unmapped = append(unmapped, right)
+			}
+		}
+
+		// for next iteration (next row of map),
+		// source ranges to check should only include currently-unmapped stuff
+		sourceInterval = unmapped
+	}
+
+	// anything not mapped after checking every row of map is passed on like normal
+	destInterval = append(destInterval, unmapped...)
+
+	return destInterval
 }
 
 func part2(seeds []int) {
 	defer aoc.Timer("Part 2")()
 
-	var chain []int
+	var currentInterval [][]int
+
 	var location int
-
-	var start, end int
-
 	lowestLocation := -1
 
-	ranges, _ := getRangesFromPairs(seeds)
+	seedInterval := getRangesFromPairs(seeds)
+	// fmt.Println("seedInterval =", seedInterval)
 
-	for _, rng := range ranges {
-		// for _, seed := range rng {
-		start = rng[0]
-		end = start + rng[1]
-		for seed := start; seed < end; seed++ {
-			chain = getChain(seed)
-			// fmt.Println("chain", chain, len(chain))
+	currentInterval = seedInterval
 
-			location = chain[len(chain)-1]
+	// propagate the interval through the maps
+	for _, mp := range maps {
+		currentInterval = intervalIntersection(mp, currentInterval)
+		// fmt.Println("currentInterval =", currentInterval)
+	}
 
-			if lowestLocation == -1 || location < lowestLocation {
-				lowestLocation = location
-				// fmt.Println("new lowest:", lowestLocation)
-			}
+	// find the lowest location value in the mapped interval
+	for _, locationRange := range currentInterval {
+		// checking the start of each range within the interval
+		location = locationRange[0]
+		if lowestLocation == -1 || location < lowestLocation {
+			lowestLocation = location
 		}
 	}
 

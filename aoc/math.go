@@ -28,3 +28,19 @@ func IntRange(start, end int) []int {
 	}
 	return rng
 }
+
+func MaxInt(x, y int) int {
+	if x > y {
+		return x
+	} else {
+		return y
+	}
+}
+
+func MinInt(x, y int) int {
+	if x < y {
+		return x
+	} else {
+		return y
+	}
+}
